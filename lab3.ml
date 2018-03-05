@@ -56,7 +56,8 @@ be any of the following options: red, crimson, orange, yellow, green,
 blue, indigo, or violet.
 ......................................................................*)
 
-type color_label = NotImplemented ;;
+type color_label = | Red | Crimson | Orange | Yellow | Green | Blue |
+  Indigo | Violet ;;
 
 (* You've just defined a new variant type! But this is an overly
 simplistic representation of colors. Let's make it more usable.
@@ -91,7 +92,9 @@ channels. You'll want to use Simple and RGB as the value constructors
 in this new variant type.
 ......................................................................*)
 
-type color = NotImplemented ;;
+type color = 
+  | Simple of color_label
+  | RGB of (int * int * int) ;;
 
 (* Note that there is an important assumption about the RGB values
 that determine whether a color is valid or not. The RGB type contains
@@ -117,8 +120,14 @@ an Invalid_Color exception with a useful message.
 
 exception Invalid_Color of string ;;
 
-let valid_rgb = 
-  fun _ -> failwith "valid_rgb not implemented" ;;
+let valid_rgb (col : color) : color = 
+  match col with
+  | Simple x -> col
+  | RGB (r, g, b) -> 
+    let valid = fun (x: int) : bool -> 
+      (x <= 255) && (x >= 0) in
+        if (valid r) && (valid g) && (valid b)
+        then col else raise (Invalid_Color "must be btw [0,255]") ;;
 
 (*......................................................................
 Exercise 3: Write a function, make_color, that accepts three integers
@@ -126,8 +135,8 @@ for the channel values and returns a value of the color type. Be sure
 to verify the invariant.
 ......................................................................*)
 
-let make_color = 
-  fun _ -> failwith "make_color not implemented" ;;
+let make_color (r : int) (g : int) (b : int) : color = 
+  valid_rgb (RGB (r, g, b)) ;;
 
 (*......................................................................
 Exercise 4: Write a function, convert_to_rgb, that accepts a color and
@@ -144,8 +153,17 @@ below are some other values you might find helpful.
     240 | 130 | 240 | Violet
 ......................................................................*)
 
-let convert_to_rgb = 
-  fun _ -> failwith "convert_to_rgb not implemented" ;;
+let convert_to_rgb (col: color) : (int * int * int) =
+  match col with 
+  | RGB x -> x
+  | Simple Red -> (255, 0, 0)
+  | Simple Crimson -> (164, 16, 52)
+  | Simple Orange -> (255, 165, 0)
+  | Simple Yellow -> (255, 255, 0)
+  | Simple Green -> (0, 64, 0)
+  | Simple Blue -> (0, 0, 255)
+  | Simple Indigo -> (75, 0 ,130)
+  | Simple Violet -> (240, 130, 240);;
 
 (* If we want to blend two colors, we might be tempted to average each
 of the individual color channels. This might be fine, but a quirk in
@@ -169,8 +187,10 @@ and returns an integer whose result matches the calculation above. Be
 sure to round your result when converting back to an integer.
 ......................................................................*)
 
-let blend_channel = 
-  fun _ -> failwith "blend_channel not implemented" ;;
+let blend_channel (x : int) (y : int) : int = 
+  int_of_float (sqrt (((float_of_int x) *. (float_of_int x) +. 
+    (float_of_int y) *. (float_of_int y)) /. 2.)) ;;
+  
 
 (*......................................................................
 Exercise 6: Now write a function, blend, that returns the result of
@@ -178,8 +198,11 @@ blending two colors. Do you need to do anything special to preserve
 the invariant in this function after blending?
 ......................................................................*)
 
-let blend = 
-  fun _ -> failwith "blend not implemented" ;;
+let blend (x : color) (y : color) : color = 
+  match convert_to_rgb x, convert_to_rgb y with
+  | (r1, g1, b1), (r2, g2, b2) -> RGB (blend_channel r1 r2, 
+                                       blend_channel g1 g2,
+                                       blend_channel b1 b2) ;;
 
    
 (*======================================================================
@@ -205,7 +228,9 @@ should be. Then, consider the implications of representing the overall
 data type as a tuple or a record.
 ......................................................................*)
 
-type date = NotImplemented ;;
+type date = { year : int; 
+              month : int;
+              date : int; } ;;
 
 (* After you've thought it through, look up the Date module in the
 OCaml documentation to see how this was implemented there. If you
@@ -262,7 +287,9 @@ Exercise 10: Define a person record type. Use the field names "name",
 "favorite", and "birthdate".
 ......................................................................*)
 
-type person = NotImplemented ;;
+type person = { name : string; 
+                favorite : color;
+                birthdate : date; } ;;
 
 (* Let's now do something with these person values. We'll create a
 data structure that allows us to model simple familial relationships.
@@ -301,8 +328,8 @@ ensure the invariants are preserved for color and date, use them here
 as well.
 ......................................................................*)
 
-let new_child = 
-  fun _ -> failwith "new_child not implemented" ;;
+(* let new_child (n : string) (c : color) (d : date) : family = 
+  let new = { name: n; favorite: valid_rgb c; birthdate: d;} in Single new ;; *)
 
 (*......................................................................
 Exercise 12: Write a function that allows a person to marry in to a
